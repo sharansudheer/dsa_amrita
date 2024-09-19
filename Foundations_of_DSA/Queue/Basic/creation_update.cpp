@@ -1,148 +1,102 @@
-// C program to implement the queue data structure using
-// linked list
+// C program for array implementation of queue
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-// Node structure representing a single node in the linked
-// list
-typedef struct Node {
-    int data;
-    struct Node* next;
-} Node;
+// A structure to represent a queue
+struct Queue {
+	int front, rear, size;
+	unsigned capacity;
+	int* array;
+};
 
-// Function to create a new node
-Node* createNode(int new_data)
+// function to create a queue
+// of given capacity.
+// It initializes size of queue as 0
+struct Queue* createQueue(unsigned capacity)
 {
-    Node* new_node = (Node*)malloc(sizeof(Node));
-    new_node->data = new_data;
-    new_node->next = NULL;
-    return new_node;
+	struct Queue* queue = (struct Queue*)malloc(
+		sizeof(struct Queue));
+	queue->capacity = capacity;
+	queue->front = queue->size = 0;
+
+	// This is important, see the enqueue
+	queue->rear = capacity - 1;
+	queue->array = (int*)malloc(
+		queue->capacity * sizeof(int));
+	return queue;
 }
 
-// Structure to implement queue operations using a linked
-// list
-typedef struct Queue {
-
-    // Pointer to the front and the rear of the linked list
-    Node *front, *rear;
-} Queue;
-
-// Function to create a queue
-Queue* createQueue()
+// Queue is full when size becomes
+// equal to the capacity
+int isFull(struct Queue* queue)
 {
-    Queue* q = (Queue*)malloc(sizeof(Queue));
-    q->front = q->rear = NULL;
-    return q;
+	return (queue->size == queue->capacity);
 }
 
-// Function to check if the queue is empty
-int isEmpty(Queue* q)
+// Queue is empty when size is 0
+int isEmpty(struct Queue* queue)
 {
-
-    // If the front and rear are null, then the queue is
-    // empty, otherwise it's not
-    if (q->front == NULL && q->rear == NULL) {
-        return 1;
-    }
-    return 0;
+	return (queue->size == 0);
 }
 
-// Function to add an element to the queue
-void enqueue(Queue* q, int new_data)
+// Function to add an item to the queue.
+// It changes rear and size
+void enqueue(struct Queue* queue, int item)
 {
-
-    // Create a new linked list node
-    Node* new_node = createNode(new_data);
-
-    // If queue is empty, the new node is both the front
-    // and rear
-    if (q->rear == NULL) {
-        q->front = q->rear = new_node;
-        return;
-    }
-
-    // Add the new node at the end of the queue and
-    // change rear
-    q->rear->next = new_node;
-    q->rear = new_node;
+	if (isFull(queue))
+		return;
+	queue->rear = (queue->rear + 1)
+				% queue->capacity;
+	queue->array[queue->rear] = item;
+	queue->size = queue->size + 1;
+	printf("%d enqueued to queue\n", item);
 }
 
-// Function to remove an element from the queue
-void dequeue(Queue* q)
+// Function to remove an item from queue.
+// It changes front and size
+int dequeue(struct Queue* queue)
 {
-
-    // If queue is empty, return
-    if (isEmpty(q)) {
-        printf("Queue Underflow\n");
-        return;
-    }
-
-    // Store previous front and move front one node
-    // ahead
-    Node* temp = q->front;
-    q->front = q->front->next;
-
-    // If front becomes null, then change rear also
-    // to null
-    if (q->front == NULL)
-        q->rear = NULL;
-
-    // Deallocate memory of the old front node
-    free(temp);
+	if (isEmpty(queue))
+		return INT_MIN;
+	int item = queue->array[queue->front];
+	queue->front = (queue->front + 1)
+				% queue->capacity;
+	queue->size = queue->size - 1;
+	return item;
 }
 
-// Function to get the front element of the queue
-int getFront(Queue* q)
+// Function to get front of queue
+int front(struct Queue* queue)
 {
-
-    // Checking if the queue is empty
-    if (isEmpty(q)) {
-        printf("Queue is empty\n");
-        return INT_MIN;
-    }
-    return q->front->data;
+	if (isEmpty(queue))
+		return INT_MIN;
+	return queue->array[queue->front];
 }
 
-// Function to get the rear element of the queue
-int getRear(Queue* q)
+// Function to get rear of queue
+int rear(struct Queue* queue)
 {
-
-    // Checking if the queue is empty
-    if (isEmpty(q)) {
-        printf("Queue is empty\n");
-        return INT_MIN;
-    }
-    return q->rear->data;
+	if (isEmpty(queue))
+		return INT_MIN;
+	return queue->array[queue->rear];
 }
 
-// Driver code
+// Driver program to test above functions./
 int main()
 {
-    Queue* q = createQueue();
+	struct Queue* queue = createQueue(1000);
 
-    // Enqueue elements into the queue
-    enqueue(q, 10);
-    enqueue(q, 20);
-    
-      printf("Queue Front: %d\n", getFront(q));
-    printf("Queue Rear: %d\n", getRear(q));
+	enqueue(queue, 10);
+	enqueue(queue, 20);
+	enqueue(queue, 30);
+	enqueue(queue, 40);
 
-    // Dequeue elements from the queue
-    dequeue(q);
-    dequeue(q);
+	printf("%d dequeued from queue\n\n",
+		dequeue(queue));
 
+	printf("Front item is %d\n", front(queue));
+	printf("Rear item is %d\n", rear(queue));
 
-    // Enqueue more elements into the queue
-    enqueue(q, 30);
-    enqueue(q, 40);
-    enqueue(q, 50);
-
-    // Dequeue an element from the queue
-    dequeue(q);
-
-    printf("Queue Front: %d\n", getFront(q));
-    printf("Queue Rear: %d\n", getRear(q));
-
-    return 0;
+	return 0;
 }
