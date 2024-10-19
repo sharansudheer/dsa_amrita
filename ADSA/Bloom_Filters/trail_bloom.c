@@ -34,3 +34,21 @@ struct bloom_filter {
     void *bits;
     size_t size;
 };
+bloom_t bloom_create(size_t size) {
+	bloom_t res = calloc(1, sizeof(struct bloom_filter));
+	res->size = size;
+	res->bits = malloc(size);
+	return res;
+}
+
+void bloom_free(bloom_t filter) {
+	if (filter) {
+		while (filter->func) {
+			struct bloom_hash *h;
+			filter->func = h->next;
+			free(h);
+		}
+		free(filter->bits);
+		free(filter);
+	}
+}
