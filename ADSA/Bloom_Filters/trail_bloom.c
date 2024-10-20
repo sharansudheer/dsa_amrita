@@ -52,3 +52,17 @@ void bloom_free(bloom_t filter) {
 		free(filter);
 	}
 }
+
+void bloom_add_hash(bloom_t filter, hash_function func) {
+	struct bloom_hash *h = calloc(1, sizeof(struct bloom_hash));
+	h->func = func;
+	struct bloom_hash *last = filter->func;
+	while (last && last->next) {
+		last = last->next;
+	}
+	if (last) {
+		last->next = h;
+	} else {
+		filter->func = h;
+	}
+}
